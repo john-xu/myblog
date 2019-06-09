@@ -11,10 +11,6 @@
     "type": "git",
     "url": "git+https://github.com/john-xu/myblog.git"
   },
-  "keywords": [
-    "vuepress",
-    "blog"
-  ],
   "author": "john-xu",
   "license": "ISC",
   "bugs": {
