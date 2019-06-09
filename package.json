@@ -1,0 +1,27 @@
+{
+  "name": "myblog",
+  "version": "1.0.0",
+  "description": "this is blog repo",
+  "scripts": {
+    "dev": "vuepress dev .",
+    "build": "vuepress build",
+    "deploy": "./deploy.sh"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/john-xu/myblog.git"
+  },
+  "keywords": [
+    "vuepress",
+    "blog"
+  ],
+  "author": "john-xu",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/john-xu/myblog/issues"
+  },
+  "homepage": "https://github.com/john-xu/myblog#readme",
+  "devDependencies": {
+    "vuepress": "^1.0.0"
+  }
+}
