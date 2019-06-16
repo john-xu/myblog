@@ -1,5 +1,5 @@
 module.exports = {
-    title: '慕远久航',
+    title: '慕远',
     description: '慕远的小码头',
     head: [
         ['link', { rel: 'icon', href: '/logo.png' }]
