@@ -13,7 +13,8 @@ module.exports = {
             '/nodejs/': [
                 ['', 'nodejs'],
                 ['kafka-node', 'kafka-node的使用'],
-                ['pm2', 'pm2的使用']
+                ['pm2', 'pm2的使用'],
+                ['express-session-redis', '使用redis存储express的session']
             ]
         }
     }
