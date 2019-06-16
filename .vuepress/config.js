@@ -1,15 +1,18 @@
 module.exports = {
     title: '慕远久航',
     description: '慕远的小码头',
+    head: [
+        ['link', { rel: 'icon', href: '/logo.png' }]
+    ],
     themeConfig: {
         nav: [
-            { text: 'nodejs', link: '/nodejs/'}
+            { text: 'Node.js', link: '/nodejs/'}
         ],
         // displayAllHeaders: true,
         sidebar: {
             '/nodejs/': [
                 ['', 'nodejs'],
-                ['pm2', 'pm2使用']
+                ['kafka-node', 'kafka-node的使用']
             ]
         }
     }

@@ -4,7 +4,7 @@
   "description": "this is blog repo",
   "scripts": {
     "dev": "vuepress dev .",
-    "build": "vuepress build",
+    "build": "vuepress build .",
     "deploy": "./deploy.sh"
   },
   "repository": {
