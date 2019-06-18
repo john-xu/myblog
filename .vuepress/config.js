@@ -11,7 +11,8 @@ module.exports = {
         editLinkText: '帮助我们改善此页面！',
         lastUpdated: '最后更新于',
         nav: [
-            { text: 'Node.js', link: '/nodejs/'}
+            { text: 'Node.js', link: '/nodejs/'},
+            { text: 'Docker', link: '/docker/'}
         ],
         // displayAllHeaders: true,
         sidebar: {
@@ -20,6 +21,9 @@ module.exports = {
                 ['kafka-node', 'kafka-node的使用'],
                 ['pm2', 'pm2的使用'],
                 ['express-session-redis', '使用redis存储express的session']
+            ],
+            '/docker/': [
+                ['', 'docker']
             ]
         },
     }

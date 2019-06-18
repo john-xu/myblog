@@ -61,6 +61,10 @@ var redisClient = new Redis.Cluster([
       password: 'fallback-password' // 如果集群有密码保护，可以设置集群的密码
     }
 });
+redisClient.on('error', function(err) { // 获取集群所有节点都失败的时候的错误信息
+    console.log('get cluster err message:', err)
+})
+
 app.use(session({
     secret: 'redis-session-test',
     store: new RedisStore({client: redisClient}),
