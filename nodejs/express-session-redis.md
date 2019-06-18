@@ -43,3 +43,24 @@ app.use(session({
     "prefix": "mysite:sess:", //key的前缀，默认为"sess:"
 }
 ```
+如果使用redis集群的话需要[ioredis](https://github.com/luin/ioredis)，使用如下，原文在[这里](https://github.com/tj/connect-redis/issues/240)
+```js
+var express = require('express');
+var app = express();
+var session = require('express-session');
+var RedisStore = require('connect-redis')(session);
+var Redis = require('ioredis');
+
+var redisClient = new Redis.Cluster([
+    {port: 6379, host: 'your-cluster-ip-1'},
+    {port: 6379, host: 'your-cluster-ip-2'},
+    {port: 6379, host: 'your-cluster-ip-3'},
+    {port: 6379, host: 'your-cluster-ip-4'}
+]);
+app.use(session({
+    secret: 'redis-session-test',
+    store: new RedisStore({client: redisClient}),
+    resave: false,
+    saveUninitialized: true
+}));
+```
