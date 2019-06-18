@@ -52,11 +52,15 @@ var RedisStore = require('connect-redis')(session);
 var Redis = require('ioredis');
 
 var redisClient = new Redis.Cluster([
-    {port: 6379, host: 'your-cluster-ip-1'},
-    {port: 6379, host: 'your-cluster-ip-2'},
-    {port: 6379, host: 'your-cluster-ip-3'},
-    {port: 6379, host: 'your-cluster-ip-4'}
-]);
+    {port: 6379, host: 'your-cluster-ip-1', password: 'password-for-6379'},//可以单独设置密码
+    {port: 6378, host: 'your-cluster-ip-2'},
+    {port: 6377, host: 'your-cluster-ip-3'},
+    {port: 6376, host: 'your-cluster-ip-4'}
+], {
+    redisOptions: {
+      password: 'fallback-password' // 如果集群有密码保护，可以设置集群的密码
+    }
+});
 app.use(session({
     secret: 'redis-session-test',
     store: new RedisStore({client: redisClient}),
