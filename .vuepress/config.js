@@ -11,11 +11,18 @@ module.exports = {
         editLinkText: '帮助我们改善此页面！',
         lastUpdated: '最后更新于',
         nav: [
+            { text: 'ES6', link: '/ES6/'},
             { text: 'Node.js', link: '/nodejs/'},
-            { text: 'Docker', link: '/docker/'}
+            { text: 'Docker', link: '/docker/'},
+            { text: '服务器', link: '/server/'}
         ],
         // displayAllHeaders: true,
         sidebar: {
+            '/ES6/': [
+                ['', 'ES6'],
+                ['Promise', 'Promise学习'],
+                ['async', 'async/await学习']
+            ],
             '/nodejs/': [
                 ['', 'nodejs'],
                 ['kafka-node', 'kafka-node的使用'],
@@ -24,6 +31,10 @@ module.exports = {
             ],
             '/docker/': [
                 ['', 'docker']
+            ],
+            '/server/': [
+                ['', '服务器索引'],
+                ['nginx', 'nginx学习']
             ]
         },
     }
