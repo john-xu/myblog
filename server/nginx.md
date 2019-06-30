@@ -90,7 +90,7 @@ kill -QUIT nginx主进程号
 上下文：events
 ```
 设置每个工作进程可以打开的最大并发数，这个数量包含所有连接（和后端服务器建立的连接等），而不仅仅是和客户端的连接。实际并发数不能超过打开文件的最大数量限制，这个限制可以用`worker_rlimit_nofile`指令修改。作为反向代理时，`max_clients`为`worker_processes * worker_connections/4`。
-## Http核心模块
+## HTTP核心模块
 ### alias
 ```
 语法：alias path;
@@ -297,3 +297,54 @@ location / {
 上下文：http,server,location
 ```
 设置文件扩展名和响应的MIME类型的映射表。
+## HTTP Upstream模块
+该模块允许定义一组服务器来实现后端服务器负载均衡，他们可以在`proxy_pass`,`fastcgi_pass`,`memcached_pass`中被引用到。更多信息可参考[ngx_http_upstream_module模块](http://tengine.taobao.org/nginx_docs/cn/docs/http/ngx_http_upstream_module.html)。配置例子如下：
+```
+upstream backend {
+    server backend1.example.com       weight=5;
+    server backend2.example.com:8080;
+    server unix:/tmp/backend3;        max_fails=3 fail_timeout=30s;
+
+    server backup1.example.com:8080   backup;
+    server backup2.example.com:8080   backup;
+}
+
+server {
+    location / {
+        proxy_pass http://backend;
+    }
+}
+```
+### upstream
+```
+语法：upstream name {...}
+默认：-
+上下文：http
+```
+定义一组服务器。这些服务器可以监听不同的端口。而且，监听在TCP和UNIX域套接字的服务器可以混用。默认情况下，nginx按加权轮转的方式将请求分发到各服务器。
+### server
+```
+语法：server address [parameters]
+默认：-
+上下文：upstream
+```
+定义服务器的地址address和其他参数parameters。地址可以是域名或者IP地址，端口是可选的，或者是指定`unix:`前缀的UNIX域套接字的路径。如果没有指定端口，就使用`80`端口。如果一个域名解析到多个IP，本质上是定义了多个server。可选择的参数如下：<br />
+**`weight=number:`** 设定服务器的权重，默认是1。<br />
+**`max_fails=number:`** 设定Nginx与服务器通信的尝试失败的次数。在fail_timeout参数定义的时间段内，如果失败的次数达到此值，Nginx就认为服务器不可用。在下一个fail_timeout时间段，服务器不会再被尝试。失败的尝试次数默认是1。设为0就会停止统计尝试次数，认为服务器是一直可用的。<br />
+**`fail_timeout=time:`** 1.统计失败尝试次数的时间段。2.服务器被认为不可用的时间段。<br />
+**`backup:`** 标记为备用服务器。当主服务器不可用以后，请求会被传给这些服务器。<br />
+**`down:`** 标记服务器永久不可用，可以跟`ip_hash`指令一起使用。
+### iphash
+```
+语法：iphash
+默认：-
+上下文：upstream
+```
+指定服务器组的负载均衡方法，请求基于客户端的IP地址在服务器间进行分发。IPv4地址的前三个字节或者IPv6的整个地址，会被用来作为一个散列key。这种方法可以确保从同一个客户端过来的请求，会被传给同一台服务器。如果其中一个服务器想暂时移除，应该加上down参数。这样可以保留当前客户端IP地址散列分布。
+### keepalive
+```
+语法：keepalive connections;
+默认：-
+上下文：upstream
+```
+激活对上游服务器的连接进行缓存。connections参数设置每个worker进程与后端服务器保持连接的最大数量。这些保持的连接会被放入缓存。如果连接数大于这个值时，最久未使用的连接会被关闭。
