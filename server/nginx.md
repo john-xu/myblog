@@ -298,7 +298,7 @@ location / {
 ```
 设置文件扩展名和响应的MIME类型的映射表。
 ## HTTP Upstream模块
-该模块允许定义一组服务器来实现后端服务器负载均衡，他们可以在`proxy_pass`,`fastcgi_pass`,`memcached_pass`中被引用到。更多信息可参考[ngx_http_upstream_module模块](http://tengine.taobao.org/nginx_docs/cn/docs/http/ngx_http_upstream_module.html)。配置例子如下：
+该模块允许定义一组服务器来实现后端服务器负载均衡，他们可以在`proxy_pass`，`fastcgi_pass`，`memcached_pass`中被引用到。更多信息可参考[ngx_http_upstream_module模块](http://tengine.taobao.org/nginx_docs/cn/docs/http/ngx_http_upstream_module.html)。配置例子如下：
 ```
 upstream backend {
     server backend1.example.com       weight=5;
@@ -348,3 +348,213 @@ server {
 上下文：upstream
 ```
 激活对上游服务器的连接进行缓存。connections参数设置每个worker进程与后端服务器保持连接的最大数量。这些保持的连接会被放入缓存。如果连接数大于这个值时，最久未使用的连接会被关闭。
+## HTTP Access模块
+该模块允许限制某些IP地址的客户端访问，规则按照顺序依次检测，直到匹配到第一条规则，示例如下：
+```
+location / {
+    deny  192.168.1.1;
+    allow 192.168.1.0/24;
+    allow 10.1.1.0/16;
+    allow 2001:0db8::/32;
+    deny  all;
+}
+```
+### allow
+```
+语法：allow address | CIDR | all;
+默认：-
+上下文：http, server, location, limit_except
+```
+允许指定的网络地址访问。
+### deny
+```
+语法：deny address | CIDR | all;
+默认：-
+上下文：http, server, location, limit_except
+```
+拒绝指定的网络地址访问。
+## HTTP Empty Gif模块
+本模块在内存中常驻了一个 1x1 的透明 GIF 图像，可以被非常快速的调用。常用在统计等仅需要一个请求的时候。示例如下：
+```
+location = /_.gif {
+    empty_gif;
+}
+```
+### empty_gif
+```
+语法：empty_gif;
+默认：-
+上下文：location
+```
+## HTTP Fcgi模块
+这个模块允许Nginx 与FastCGI 进程交互，并通过传递参数来控制FastCGI 进程工作。更多可参考[ngx_http_fastcgi_module](http://tengine.taobao.org/nginx_docs/cn/docs/http/ngx_http_fastcgi_module.html)，示例如下：
+```
+location / {
+    fastcgi_pass  localhost:9000;
+    fastcgi_index index.php;
+
+    fastcgi_param SCRIPT_FILENAME /home/www/scripts/php$fastcgi_script_name;
+    fastcgi_param QUERY_STRING    $query_string;
+    fastcgi_param REQUEST_METHOD  $request_method;
+    fastcgi_param CONTENT_TYPE    $content_type;
+    fastcgi_param CONTENT_LENGTH  $content_length;
+}
+```
+### fastcgi_pass
+```
+语法：fastcgi_pass address;
+默认：-
+上下文：location, if in location
+```
+设置一个FastCGI服务的地址，可以是一个地址加端口，例如`fastcgi_pass localhost:9000;`；也可以是一个UNICX的socket路径，如`fastcgi_pass unix:/tmp/fastcgi.socket;`
+### fastcgi_index
+```
+语法：fastcgi_index name;
+默认：-
+上下文：http, server, location
+```
+如果请求的FastCGI URI以`/`结束，该指令设置的文件会被附加到URI的后面并保存在变量`$fastcgi_script_name`中
+### fastcgi_param
+```
+语法：fastcgi_param parameter value [if_not_empty];
+默认：-
+上下文：http, server, location
+```
+该指令指定的参数,将被传递给FastCGI-server。
+
+它可能使用字符串、变量及其它们的组合来作为参数值。如果不在此制定参数，它就会继承外层设置；如果在此设置了参数，将清除外层相关设置，仅启用本层设置。
+
+下面是一个例子,对于PHP来说的最精简的必要参数：
+```
+  fastcgi_param  SCRIPT_FILENAME  /home/www/scripts/php$fastcgi_script_name;
+  fastcgi_param  QUERY_STRING     $query_string;
+```
+参数SCRIPT_FILENAME 是PHP 用来确定执行脚本的名字，而参数QUERY_STRING 是它的一个子参数。
+
+如果要处理POST,那么这三个附加参数是必要的：
+```
+  fastcgi_param  REQUEST_METHOD   $request_method;
+  fastcgi_param  CONTENT_TYPE     $content_type;
+  fastcgi_param  CONTENT_LENGTH   $content_length;
+```
+如果PHP 在编译时使用了--enable-force-cgi-redirect选项，设置参数REDIRECT_STATUS 的值为200就是必须的了。
+```
+  fastcgi_param  REDIRECT_STATUS  200;
+```
+## HTTP Gzip模块
+这个模块支持在线实时压缩输出数据流，内置变量 $gzip_ratio 可以获取到gzip的压缩比率，示例如下：
+```
+: gzip             on;
+: gzip_min_length  1000;
+: gzip_proxied     expired no-cache no-store private auth;
+: gzip_types       text/plain application/xml;
+```
+### gzip
+```
+语法：gzip on | off;
+默认：gzip off;
+上下文：http, server, location, if in location
+```
+开启或者关闭gzip模块
+### gzip_comp_level
+```
+语法：gzip_comp_level level;
+默认：gzip_comp_level 1;
+上下文：http, server, location
+```
+gzip压缩比，1 压缩比最小处理速度最快，9 压缩比最大但处理最慢（传输快但比较消耗cpu）。
+## HTTP Headers模块
+本模板可以设置HTTP报文的头标。示例如下：
+```
+: expires     24h;
+: expires     0;
+: expires     -1;
+: expires     epoch;
+: add_header  Cache-Control  private;
+```
+### add_header
+```
+语法：add_header name value;
+默认：-
+上下文：http, server, location
+```
+当HTTP应答状态码为 200、204、301、302 或 304 的时候，增加指定的HTTP头标。其中头标的值可以使用变量。
+### expires
+```
+语法：expires [time|epoch|max|off];
+默认：expires off
+上下文：http, server, location
+```
+使用本指令可以控制HTTP应答中的“Expires”和“Cache-Control”的头标，（起到控制页面缓存的作用）。
+可以在time值中使用正数或负数。“Expires”头标的值将通过当前系统时间加上您设定的`time`值来获得。<br/>
+`epoch`指定“Expires”的值为 1 January, 1970, 00:00:01 GMT。<br />
+`max`指定“Expires”的值为 31 December 2037 23:59:59 GMT，“Cache-Control”的值为10年。<br />
+`-1`指定“Expires”的值为 服务器当前时间 -1s,即永远过期<br />
+`Cache-Control`头标的值由您指定的时间来决定：负数为`Cache-Control: no-cache`；正数或0为`Cache-Control: max-age = #`，#为您指定时间的秒数。<br />
+`off`表示不修改“Expires”和“Cache-Control”的值。
+## HTTP Index模块
+模块 ngx_http_index_module 处理以斜线字符(‘/’)结尾的请求，示例如下：
+```
+location / {
+    index index.$geo.html index.html /index.html;
+}
+```
+### index
+```
+语法：index file ...;
+默认：index index.html
+上下文：http, server, location
+```
+定义将要被作为默认页的文件。 文件 file 的名字可以包含变量。 文件以配置中指定的顺序被nginx检查。列表中的最后一个元素可以是一个带有绝对路径的文件。
+## HTTP Referer模块
+ngx_http_referer_module模块允许拦截“Referer”请求头中含有非法值的请求，阻止它们访问站点。 需要注意的是伪造一个有效的“Referer”请求头是相当容易的，因此这个模块的预期目的不在于彻底地阻止这些非法请求，而是为了阻止由正常浏览器发出的大规模此类请求。还有一点需要注意，即使正常浏览器发送的合法请求，也可能没有“Referer”请求头。示例如下：
+```
+valid_referers none blocked server_names
+               *.example.com example.* www.example.org/galleries/
+               ~\.google\.;
+
+if ($invalid_referer) {
+    return 403;
+}
+```
+### valid_referers
+```
+语法：valid_referers none | blocked | server_names | string ...;
+默认：index index.html
+上下文：server, location
+```
+`Referer`请求头为指定值时，内嵌变量$invalid_referer被设置为空字符串， 否则这个变量会被置成“1”。查找匹配时不区分大小写。
+
+该指令的参数可以为下面的内容：
+
+`none`缺少“Referer”请求头；<br />
+`blocked`“Referer” 请求头存在，但是它的值被防火墙或者代理服务器删除； 这些值都不以“http://” 或者 “https://”字符串作为开头；<br />
+`server_names`“Referer” 请求头包含某个虚拟主机名；<br />
+`任意字符串`定义一个服务器名和可选的URI前缀。服务器名允许在开头或结尾使用`*`符号。当nginx检查时，“Referer”请求头里的服务器端口将被忽略。<br />
+`正则表达式`必须以“~”符号作为开头。需要注意的是表达式会从“http://”或者“https://”之后的文本开始匹配。<br />
+## HTTP Log模块
+更多参考可见[ngx_http_log_module](http://tengine.taobao.org/nginx_docs/cn/docs/http/ngx_http_log_module.html)
+### access_log
+```
+语法：access_log path [format [buffer=size]];
+        access_log off;
+默认：access_log logs/access.log combined;
+上下文：http, server, location, if in location, limit_except
+```
+为访问日志设置路径，格式和缓冲区大小（nginx访问日志支持缓存）。在同一个配置层级里可以指定多个日志。特定值off会取消当前配置层级里的所有access_log指令。如果没有指定日志格式则会使用预定义的“combined”格式。
+## HTTP Proxy模块
+此模块专伺将请求导向其它服务，更多参加[ngx_http_proxy_module](http://tengine.taobao.org/nginx_docs/cn/docs/http/ngx_http_proxy_module.html#proxy_pass)，示例如下：
+```
+location / {
+    proxy_pass        http://localhost:8000;
+    proxy_set_header  X-Real-IP  $remote_addr;
+}
+```
+注意一点,当使用HTTP PROXY 模块时(或者甚至是使用FastCGI时),用户的整个请求会在nginx中缓冲直至传送给后端被代理的服务器.因此,上传进度的测算就会运作得不正确,如果它们通过测算后端服务器收到的数据来工作的话。
+### proxy_pass
+```
+语法：proxy_pass URL;
+默认：-
+上下文：location, if in location, limit_except
+```
+设置后端服务器的协议和地址，还可以设置可选的URI以定义本地路径和后端服务器的映射关系。这条指令可以设置的协议是`http`或者`https`，而地址既可以使用域名或者IP地址加端口（可选）的形式来定义，又可以使用UNIX域套接字路径来定义。
