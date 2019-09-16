@@ -34,7 +34,8 @@ module.exports = {
             ],
             '/server/': [
                 ['', '服务器索引'],
-                ['nginx', 'nginx学习']
+                ['nginx', 'nginx学习'],
+                ['httpcache', 'HTTP缓存']
             ]
         },
     }
